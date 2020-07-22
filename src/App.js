@@ -1,47 +1,31 @@
 import React from 'react';
 import './App.css';
 import AddModalFprm from './components/AddModalFprm'
-import { Table,Button,Modal, message } from 'antd';
+import { Table,Button,Modal, message,Checkbox } from 'antd';
+const CheckboxGroup = Checkbox.Group;
 
+//定义要变化的列的数组
+const delColumns=[
+  {
+    title: 'age',
+    dataIndex: 'age',
+    width: '15%',
+    editable: true,
+  },
+  {
+    title: 'address',
+    dataIndex: 'address',
+    width: '40%',
+    editable: true,
+  },
+]
+const plainOptions = [
+
+  { label: 'age', value: 'age' },
+   { label: 'address', value: 'address' }
+  ]//为了显示checkbox的文本和内容
 export default class App extends React.Component{
-   columns = [
-    {
-      title: 'name',
-      dataIndex: 'name',
-      width: '25%',
-      editable: true,
-    },
-    {
-      title: 'age',
-      dataIndex: 'age',
-      width: '15%',
-      editable: true,
-    },
-    {
-      title: 'address',
-      dataIndex: 'address',
-      width: '40%',
-      editable: true,
-    },
-    {
-      title: 'operation',
-      dataIndex: 'operation',
-      render: (text,record,aa) => {
-        return(
-         <div>
-           <Button onClick={()=>{
-             this.setState({
-              warnMessages:record
-             })
-             this.showModal(record)}
-             }>编辑</Button>&nbsp;&nbsp;&nbsp;
-           <span>删除</span>
-         </div>
-        )
-    },
-  }
    
-  ];
   state={
     warnMessages:{},
     datas:[],
@@ -65,6 +49,50 @@ export default class App extends React.Component{
         age: 22,
         address: '上海',
       },
+    ],
+    columns: [
+      {
+        title: 'name',
+        dataIndex: 'name',
+        width: '25%',
+        editable: true,
+      },
+      {
+        title: 'age',
+        dataIndex: 'age',
+        width: '15%',
+        editable: true,
+      },
+      {
+        title: 'address',
+        dataIndex: 'address',
+        width: '40%',
+        editable: true,
+      },
+      {
+        title: 'operation',
+        dataIndex: 'operation',
+        filterDropdown: () => (
+          <div>
+            <CheckboxGroup options={plainOptions} defaultValue={['age', 'address']} onChange={this.onChange} />
+            
+          </div>
+        ),
+        render: (text,record,aa) => {
+          return(
+           <div>
+             <Button onClick={()=>{
+               this.setState({
+                warnMessages:record
+               })
+               this.showModal(record)}
+               }>编辑</Button>&nbsp;&nbsp;&nbsp;
+             <span>删除</span>
+           </div>
+          )
+      },
+    }
+     
     ]
   }
   //更新的模态框
@@ -84,6 +112,55 @@ export default class App extends React.Component{
 componentDidMount(){
   this.setState({
     datas:this.state.data
+  })
+}
+//列改变时调用的函数
+onChange=(checkedValues)=>{
+//定义空数组，用来存放下面筛选出的对应的列
+let data=[
+  {
+    title: 'name',
+    dataIndex: 'name',
+    width: '25%',
+    editable: true,
+  },
+ 
+
+];
+  //遍历自定义的列数组，条件为：列的title===checkbox勾选的
+  delColumns.map((item,index)=>{
+    checkedValues.map((checks,index)=>{
+     if(item.title==checks){
+      data.push(item)   
+     }
+   })
+    
+  })
+  //目的是为了固定操作的列在最后面(占位)
+  data.push( {
+    title: 'operation',
+    dataIndex: 'operation',
+    filterDropdown: () => (
+      <div>
+        <CheckboxGroup options={plainOptions} defaultValue={['age', 'address']} onChange={this.onChange} />
+        
+      </div>
+    ),
+    render: (text,record,aa) => {
+      return(
+       <div>
+         <Button onClick={()=>{
+           this.setState({
+            warnMessages:record
+           })
+           this.showModal(record)}
+           }>编辑</Button>&nbsp;&nbsp;&nbsp;
+         <span>删除</span>
+       </div>
+      )
+  }})
+  this.setState({
+    columns:data
   })
 }
   handleOk = e => {
@@ -131,7 +208,7 @@ componentDidMount(){
     }
     return(
       <div>
-        <Table columns={this.columns} dataSource={this.state.datas} />
+        <Table columns={this.state.columns} dataSource={this.state.datas} />
         <Modal
           title={modalTitle}
           visible={this.state.visible}
