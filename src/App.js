@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.css';
 import AddModalFprm from './components/AddModalFprm'
-import { Table,Button,Modal, message,Checkbox } from 'antd';
+import { Table,Button,Modal, message,Checkbox,Popconfirm  } from 'antd';
 const CheckboxGroup = Checkbox.Group;
 
 //定义要变化的列的数组
@@ -27,28 +27,32 @@ const plainOptions = [
 export default class App extends React.Component{
    
   state={
+    key:'',
+    total:10,
+    pageSize:2,
+    current:1,
     warnMessages:{},
     datas:[],
     visible: 0,//控制模态框的显隐 0不显示，1添加模态框，2隐藏模态框
     data:[
-      {
-        key: 0,
-        name: 'aa',
-        age: 32,
-        address: '北京',
-      },
-      {
-        key: 1,
-        name: 'bb',
-        age: 32,
-        address: '南京',
-      },
-      {
-        key: 2,
-        name: 'cc',
-        age: 22,
-        address: '上海',
-      },
+      // {
+      //   key: 0,
+      //   name: 'aa',
+      //   age: 32,
+      //   address: '北京',
+      // },
+      // {
+      //   key: 1,
+      //   name: 'bb',
+      //   age: 32,
+      //   address: '南京',
+      // },
+      // {
+      //   key: 2,
+      //   name: 'cc',
+      //   age: 22,
+      //   address: '上海',
+      // },
     ],
     columns: [
       {
@@ -87,13 +91,38 @@ export default class App extends React.Component{
                })
                this.showModal(record)}
                }>编辑</Button>&nbsp;&nbsp;&nbsp;
-             <span>删除</span>
+                <Popconfirm
+                title={'delete confirm?'}
+                onConfirm={()=>{this.confirm(record.key)}}
+                onCancel={this.cancel}
+                okText="Yes"
+                cancelText="No"
+              >
+             <a>删除</a>
+             </Popconfirm>
            </div>
           )
       },
     }
      
     ]
+  }
+
+
+
+   confirm=(key)=> {
+   let cc= this.state.datas.filter((item,index)=>{
+      return item.key!=key
+    })
+    this.setState({
+      datas:cc
+    })
+    message.success('Click on Yes');
+  }
+  
+   cancel=(e)=> {
+    console.log(e);
+    message.error('Click on No');
   }
   //更新的模态框
   showModal = (informations) => {
@@ -114,6 +143,10 @@ componentDidMount(){
     datas:this.state.data
   })
 }
+
+
+
+
 //列改变时调用的函数
 onChange=(checkedValues)=>{
 //定义空数组，用来存放下面筛选出的对应的列
@@ -164,23 +197,47 @@ let data=[
   })
 }
   handleOk = e => {
+  
     this.forms.validateFields((err,values)=>{
+      console.log(values,'00')
      if(!err){
-         let aa= this.state.data.filter((iten,index)=>{
-          values.key=index
-            if(iten.key===values.key){
-              return values
+      let aa=[];
+      this.setState({
+        visible:0,
+      });
+      
+      this.forms.resetFields();//form表单制空
+         const {userName,userAge, userAdress}=values
+         const informations = this.informations
+        if( informations){
+          const informationsId = informations.key
+          this.state.datas.map((item,index)=>{
+            console.log(item)
+            if(item.key==informationsId){
+              console.log(informationsId)
+              item.name=userName
+              item.age=userAge
+              item.address=userAdress
+              console.log(item)
             }
-            return iten
-            
-          })
+            aa.push(item)
+          })                    
           this.setState({
             datas:aa
           })
+        }else{
+          this.state.datas.push( {
+            key: this.state.datas.length,
+            name: userName,
+            age: userAge,
+            address: userAdress,
+          },)
           this.setState({
-            visible: false,
-          });
-          this.forms.resetFields();//form表单制空
+            datas:this.state.datas
+          })
+        }
+
+    
      }else{
       message.error('添加失败，请检查之后在添加')
      }
@@ -189,7 +246,9 @@ let data=[
     });
     
   };
+  aaa=(length)=>{
 
+  }
   handleCancel = () => {
       // 清除输入数据
       this.forms.resetFields()
@@ -197,7 +256,15 @@ let data=[
         visible: 0,
       });
   };
+
+  onChanges=(pageNumber,)=> {
+    this.setState({
+      current:pageNumber,
+    })
+    console.log('Page: ', pageNumber);
+  }
   render(){
+    console.log(this.state.datas)
     const {visible}=this.state
     const informations = this.informations || {} // 如果还没有指定一个空对象 将值传入form组件里
     let modalTitle
@@ -208,7 +275,17 @@ let data=[
     }
     return(
       <div>
-        <Table columns={this.state.columns} dataSource={this.state.datas} />
+        <Table columns={this.state.columns} 
+        dataSource={this.state.datas}
+        pagination={{
+          total:this.state.total,
+          pageSize:this.state.pageSize,
+          current:this.state.current,
+         onChange:(pageNumber,pageSize)=>{
+           this.onChanges(pageNumber)
+         }
+        }}
+         />
         <Modal
           title={modalTitle}
           visible={this.state.visible}
@@ -224,3 +301,4 @@ let data=[
     )
   }
 };
+

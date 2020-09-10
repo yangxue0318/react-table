@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body>
+      <div id="box" style="width: 100px; height: 100px; background-color: red;"  onclick='aa()'></div>
+   <script>
+       /**
+ *
+ * @param {Function} fn
+ * @param {Number} timeout 延时
+ * @param {any} data 数据
+ * @param {Number} type 立即执行0，延迟执行1
+ * _throttle(this.XXX, 3000, val, 1).call(this)
+ */
+function testThrottle(e,content){
+console.log(e,content)
+}
+// document.getElementById('#box').onmouseover=function(e){
+//     throttle(this.testThrottle, 2000, [1,2,3,4], 1).call(this)
+ 
+// }
+aa=()=>{
+    throttle(this.testThrottle, 300, [1,2,3,4], 1).call(this)  
+}
+// setInterval(() => {
+//     throttle(this.testThrottle, 2000, [1,2,3,4], 1).call(this)
+// }, 5000);
+
+
+function  throttle(fn, timeout = 300, data, type = 1) {
+    fn._timerBar;
+    if (fn._timerBar) clearTimeout(fn._timerBar);
+    return function() {
+      // 首次执行
+      if (!fn._timerBar) !type &&
+   fn.call(this, data);
+      fn._timerBar = setTimeout(() => {
+        type && fn.call(this, data);
+        clearTimeout(fn._timerBar);
+        delete fn._timerBar;
+      }, timeout);
+    };
+  };
+    </script>
+  </body>
+</html>
